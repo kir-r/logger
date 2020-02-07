@@ -1,16 +1,12 @@
 package com.epam.drill.logger
 
 import io.ktor.util.date.*
+import logger.LoggerConfig
 import mu.*
 import kotlin.native.concurrent.*
 
 
 val logConfig = AtomicReference(LoggerConfig().freeze()).freeze()
-
-data class LoggerConfig(val isTraceEnabled: Boolean = false,
-                        val isDebugEnabled: Boolean = false,
-                        val isInfoEnabled: Boolean = false,
-                        val isWarnEnabled: Boolean = false)
 
 
 class NativeLogger(private val name: String) : KLogger {

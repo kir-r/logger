@@ -1,32 +1,45 @@
+import org.jetbrains.kotlin.konan.target.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+
 plugins {
-    id("kotlin-multiplatform")
-    id("kotlinx-serialization")
+    kotlin("multiplatform")
     `maven-publish`
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
+allprojects {
+    repositories {
+        mavenCentral()
+        maven(url = "https://dl.bintray.com/kotlin/kotlinx/")
+    }
 }
 
 kotlin {
-    targets {
-        if (isDevMode)
-            currentTarget {
-                compilations["main"].apply {
-                    defaultSourceSet {
-                        kotlin.srcDir("./src/nativeCommonMain/kotlin")
-                        applyDependencies()
-                    }
-                }
-            }
-        else {
-            setOf(linuxX64(), macosX64(), mingwX64())
-        }
-        jvm()
 
+    val targetAttribute = Attribute.of("${project.group}.${project.name}.target", String::class.java)
+
+    val commonNative = linuxX64("commonNative")
+
+    targets.withType<KotlinNativeTarget> {
+        attributes {
+            attribute(targetAttribute, name)
+        }
     }
 
+    targets.withType<KotlinNativeTarget>().matching { it != commonNative }.all {
+        compilations.all {
+            if (!target.publishable) {
+                defaultSourceSet.kotlin.setSrcDirs(emptyList<Any>())
+            }
+            defaultSourceSet {
+                val main by commonNative.compilations
+                dependsOn(main.defaultSourceSet)
+            }
+        }
+    }
+
+    linuxX64()
+    macosX64()
+    mingwX64()
     sourceSets {
         jvm {
             compilations["main"].defaultSourceSet {
@@ -56,51 +69,10 @@ kotlin {
             }
         }
 
-        if (!isDevMode) {
-            val commonNativeMain = maybeCreate("nativeCommonMain")
-            targets.filterIsInstance<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().forEach {
-                it.compilations.forEach { knCompilation ->
-                    if (knCompilation.name == "main")
-                        knCompilation.defaultSourceSet {
-                            dependsOn(commonNativeMain)
-                            applyDependencies()
-                        }
-                }
-            }
-        }
-    }
-}
-
-tasks.withType<AbstractTestTask> {
-    testLogging.showStandardStreams = true
-}
-tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions>> {
-    kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"
-}
-tasks.build {
-    dependsOn("publishToMavenLocal")
-}
-
-fun org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.applyDependencies() {
-    dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
-        implementation("io.ktor:ktor-utils-native:$ktorUtilVersion")
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            url = uri("https://oss.jfrog.org/oss-release-local")
-            credentials {
-                username =
-                        if (project.hasProperty("bintrayUser"))
-                            project.property("bintrayUser").toString()
-                        else System.getenv("BINTRAY_USER")
-                password =
-                        if (project.hasProperty("bintrayApiKey"))
-                            project.property("bintrayApiKey").toString()
-                        else System.getenv("BINTRAY_API_KEY")
+        named("commonNativeMain") {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
+                implementation("io.ktor:ktor-utils-native:$ktorUtilVersion")
             }
         }
     }
