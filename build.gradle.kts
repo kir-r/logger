@@ -1,13 +1,19 @@
 plugins {
-    kotlin("multiplatform")
-    id("com.epam.drill.cross-compilation") version "0.13.0"
+    kotlin("multiplatform") version "1.3.70"
+    id("com.epam.drill.cross-compilation") version "0.15.1"
     `maven-publish`
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven(url = "https://dl.bintray.com/kotlin/kotlinx/")
+    maven(url = "https://kotlin.bintray.com/ktor")
 }
+
+val serializationRuntimeVersion: String by extra
+val ktorUtilVersion: String by extra
+val loggingVersion: String by extra
 
 kotlin {
 
@@ -53,3 +59,22 @@ kotlin {
         }
     }
 }
+
+publishing {
+    repositories {
+        maven {
+            url = uri("https://oss.jfrog.org/oss-release-local")
+            credentials {
+                username =
+                    if (project.hasProperty("bintrayUser"))
+                        project.property("bintrayUser").toString()
+                    else System.getenv("BINTRAY_USER")
+                password =
+                    if (project.hasProperty("bintrayApiKey"))
+                        project.property("bintrayApiKey").toString()
+                    else System.getenv("BINTRAY_API_KEY")
+            }
+        }
+    }
+}
+
