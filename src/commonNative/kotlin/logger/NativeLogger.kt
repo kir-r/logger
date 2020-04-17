@@ -1,6 +1,7 @@
 package com.epam.drill.logger
 
 import io.ktor.util.date.*
+import kotlinx.serialization.Serializable
 import mu.KLogger
 import mu.Marker
 import kotlin.native.concurrent.AtomicReference
@@ -8,11 +9,12 @@ import kotlin.native.concurrent.freeze
 
 
 val logConfig = AtomicReference(LoggerConfig().freeze()).freeze()
-
+@Serializable
 enum class LogLevel {
     TRACE, DEBUG, INFO, WARNING, ERROR
 }
 
+@Serializable
 data class LoggerConfig(
     val isTraceEnabled: Boolean = false,
     val isDebugEnabled: Boolean = false,
