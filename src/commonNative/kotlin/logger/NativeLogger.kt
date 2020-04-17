@@ -1,16 +1,46 @@
 package com.epam.drill.logger
 
 import io.ktor.util.date.*
-import mu.*
-import kotlin.native.concurrent.*
+import mu.KLogger
+import mu.Marker
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 
 
 val logConfig = AtomicReference(LoggerConfig().freeze()).freeze()
 
-data class LoggerConfig(val isTraceEnabled: Boolean = false,
-                        val isDebugEnabled: Boolean = false,
-                        val isInfoEnabled: Boolean = false,
-                        val isWarnEnabled: Boolean = false)
+enum class LogLevel {
+    TRACE, DEBUG, INFO, WARNING, ERROR
+}
+
+data class LoggerConfig(
+    val isTraceEnabled: Boolean = false,
+    val isDebugEnabled: Boolean = false,
+    val isInfoEnabled: Boolean = false,
+    val isWarnEnabled: Boolean = false
+)
+
+fun configByLoggerLevel(level: LogLevel) = when (level) {
+    LogLevel.TRACE -> LoggerConfig(
+        isTraceEnabled = true,
+        isDebugEnabled = true,
+        isInfoEnabled = true,
+        isWarnEnabled = true
+    )
+    LogLevel.DEBUG -> LoggerConfig(
+        isDebugEnabled = true,
+        isInfoEnabled = true,
+        isWarnEnabled = true
+    )
+    LogLevel.INFO -> LoggerConfig(
+        isInfoEnabled = true,
+        isWarnEnabled = true
+    )
+
+    LogLevel.WARNING -> LoggerConfig(isWarnEnabled = true)
+    else -> LoggerConfig()
+
+}
 
 
 class NativeLogger(private val name: String) : KLogger {
@@ -133,9 +163,9 @@ class NativeLogger(private val name: String) : KLogger {
 }
 
 fun GMTDate.toLogDate(): String =
-        "${year.padZero(4)}-${month.ordinal.padZero(2)}-${dayOfMonth.padZero(2)} ${hours.padZero(2)}:${minutes.padZero(2)}:${seconds.padZero(
-                2
-        )} GTM"
+    "${year.padZero(4)}-${month.ordinal.padZero(2)}-${dayOfMonth.padZero(2)} ${hours.padZero(2)}:${minutes.padZero(2)}:${seconds.padZero(
+        2
+    )} GTM"
 
 
 private fun Int.padZero(length: Int): String = toString().padStart(length, '0')

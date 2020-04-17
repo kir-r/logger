@@ -1,9 +1,9 @@
 plugins {
     kotlin("multiplatform") version "1.3.70"
-    id("com.epam.drill.cross-compilation") version "0.15.1"
+    id("com.epam.drill.cross-compilation") version "0.16.0"
     `maven-publish`
 }
-
+apply(from = "https://raw.githubusercontent.com/Drill4J/build-scripts/master/git-version.gradle.kts")
 repositories {
     mavenLocal()
     mavenCentral()
