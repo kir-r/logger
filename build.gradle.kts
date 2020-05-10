@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization")
     id("com.epam.drill.cross-compilation")
     `maven-publish`
 }

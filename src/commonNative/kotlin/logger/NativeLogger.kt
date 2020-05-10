@@ -9,6 +9,7 @@ import kotlin.native.concurrent.freeze
 
 
 val logConfig = AtomicReference(LoggerConfig().freeze()).freeze()
+
 @Serializable
 enum class LogLevel {
     TRACE, DEBUG, INFO, WARNING, ERROR
@@ -132,6 +133,7 @@ class NativeLogger(private val name: String) : KLogger {
 
     override fun error(t: Throwable?, msg: () -> Any?) {
         println("${GMTDate().toLogDate()} [$name][DRILL error] ${msg()}")
+        t?.printStackTrace()
     }
 
     override fun error(marker: Marker?, msg: () -> Any?) {
@@ -140,6 +142,7 @@ class NativeLogger(private val name: String) : KLogger {
 
     override fun error(marker: Marker?, t: Throwable?, msg: () -> Any?) {
         println("${GMTDate().toLogDate()} [$name][DRILL error] ${msg()}")
+        t?.printStackTrace()
     }
 
     override fun entry(vararg argArray: Any?) {
