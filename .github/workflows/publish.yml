@@ -2,17 +2,17 @@ name: Build & publish drill artifacts
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[0-9]*.[0-9]*.[0-9]*'
 
 jobs:
   build_and_publish_for_macos:
     name: Publish for macOS platform
     runs-on: macOS-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Publish
         run: |
-          gradle -si publish
+          gradle publish
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
@@ -23,10 +23,10 @@ jobs:
     name: Publish for Linux platform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Publish
         run: |
-          gradle -si publishLinuxX64PublicationToMavenRepository
+          gradle publishLinuxX64PublicationToMavenRepository
         env:
           BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
           BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
@@ -35,7 +35,7 @@ jobs:
     name: Publish for Windows platform (Windows platform)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Publish
         run: |
           gradle publishMingwX64PublicationToMavenRepository

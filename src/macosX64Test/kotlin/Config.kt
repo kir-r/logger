@@ -21,7 +21,7 @@ class TestLogger {
         logger.warn { "xx" }
         logConfig.value = LoggerConfig().freeze()
         Worker.start(true).execute(TransferMode.SAFE, {}) {
-            val logger = KotlinLogging.logger("xx")
+            @Suppress("NAME_SHADOWING") val logger = KotlinLogging.logger("xx")
             logger.trace { "xx" }
             logger.info { "xx" }
             logger.warn { "xx" }

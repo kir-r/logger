@@ -1,14 +1,17 @@
 plugins {
-    kotlin("multiplatform") version "1.3.70"
-    id("com.epam.drill.cross-compilation") version "0.16.0"
+    kotlin("multiplatform")
+    id("com.epam.drill.cross-compilation")
     `maven-publish`
 }
-apply(from = "https://raw.githubusercontent.com/Drill4J/build-scripts/master/git-version.gradle.kts")
+
+val scriptUrl: String by extra
+
+apply(from = "$scriptUrl/git-version.gradle.kts")
+
 repositories {
     mavenLocal()
-    mavenCentral()
-    maven(url = "https://dl.bintray.com/kotlin/kotlinx/")
-    maven(url = "https://kotlin.bintray.com/ktor")
+    apply(from = "$scriptUrl/maven-repo.gradle.kts")
+    jcenter()
 }
 
 val serializationRuntimeVersion: String by extra
@@ -59,22 +62,3 @@ kotlin {
         }
     }
 }
-
-publishing {
-    repositories {
-        maven {
-            url = uri("https://oss.jfrog.org/oss-release-local")
-            credentials {
-                username =
-                    if (project.hasProperty("bintrayUser"))
-                        project.property("bintrayUser").toString()
-                    else System.getenv("BINTRAY_USER")
-                password =
-                    if (project.hasProperty("bintrayApiKey"))
-                        project.property("bintrayApiKey").toString()
-                    else System.getenv("BINTRAY_API_KEY")
-            }
-        }
-    }
-}
-
