@@ -18,26 +18,58 @@ repositories {
 val serializationRuntimeVersion: String by extra
 val ktorUtilVersion: String by extra
 val loggingVersion: String by extra
+val klockVersion: String by extra
+val drillJvmApiLibVersion: String by extra
+
+
+val libName = "agentOnlyForTest"
+
+val JVM_TEST_TARGET_NAME = "agentOnlyForTestPurpose"
+
 
 kotlin {
 
     crossCompilation {
         common {
+            defaultSourceSet {
+                dependsOn(sourceSets.named("commonMain").get())
+            }
             defaultSourceSet.dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
                 implementation("io.ktor:ktor-utils-native:$ktorUtilVersion")
+                implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-native:$serializationRuntimeVersion")
             }
         }
     }
-    macosX64()
-    mingwX64()
-    linuxX64()
+    macosX64 {
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                implementation("com.soywiz.korlibs.klock:klock-macosx64:$klockVersion")
+            }
+        }
+    }
+    mingwX64 {
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                implementation("com.soywiz.korlibs.klock:klock-mingwx64:$klockVersion")
+            }
+        }
+    }
+    linuxX64 {
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                implementation("com.soywiz.korlibs.klock:klock-linuxx64:$klockVersion")
+            }
+        }
+    }
 
-    jvm {
+    jvm("jvmAgent") {
         compilations["main"].defaultSourceSet {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationRuntimeVersion")
-                implementation("io.github.microutils:kotlin-logging:$loggingVersion")
+                implementation("com.soywiz.korlibs.klock:klock-jvm:$klockVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationRuntimeVersion")
             }
         }
         compilations["test"].defaultSourceSet {
@@ -51,7 +83,8 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serializationRuntimeVersion")
-                implementation("io.github.microutils:kotlin-logging-common:$loggingVersion")
+                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
+
             }
         }
 
@@ -61,5 +94,27 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
+        all {
+            languageSettings.useExperimentalAnnotation("io.ktor.utils.io.core.ExperimentalIoApi")
+        }
     }
 }
+val linkJVMTIAgentTaskName = "link${libName.capitalize()}DebugShared${JVM_TEST_TARGET_NAME.capitalize()}"
+
+
+tasks.withType<org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest> {
+    dependsOn("test-agent:$linkJVMTIAgentTaskName")
+    testLogging.showStandardStreams = true
+    doFirst{
+        val agent = project(":test-agent").buildDir
+            .resolve("bin")
+            .resolve("agentOnlyForTestPurpose")
+            .resolve("agentOnlyForTestDebugShared")
+            .listFiles().apply {
+                this?.forEach { println(it.name) }
+            }
+            ?.first { it.extension == "dll" || it.extension == "so" || it.extension == "dylib" }
+        jvmArgs("-agentpath:$agent")
+    }
+}
+
