@@ -1,4 +1,5 @@
 rootProject.name = "logger"
+include(":test-agent")
 
 val scriptUrl: String by extra
 apply(from = "$scriptUrl/maven-repo.settings.gradle.kts")
