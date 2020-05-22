@@ -19,7 +19,6 @@ val serializationRuntimeVersion: String by extra
 val ktorUtilVersion: String by extra
 val loggingVersion: String by extra
 val klockVersion: String by extra
-val drillJvmApiLibVersion: String by extra
 
 
 val libName = "agentOnlyForTest"
@@ -37,7 +36,6 @@ kotlin {
             defaultSourceSet.dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
                 implementation("io.ktor:ktor-utils-native:$ktorUtilVersion")
-                implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-native:$serializationRuntimeVersion")
             }
         }
