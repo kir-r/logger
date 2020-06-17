@@ -1,39 +1,20 @@
 package com.epam.drill.logger
-import kotlinx.serialization.*
 
-@Serializable
-data class LoggerConfig(
-    val isTraceEnabled: Boolean = false,
-    val isDebugEnabled: Boolean = false,
-    val isInfoEnabled: Boolean = false,
-    val isWarnEnabled: Boolean = false
-)
-
-@Serializable
-enum class LogLevel {
-    TRACE, DEBUG, INFO, WARNING, ERROR
+class LoggerConfig(val level: LogLevel = LogLevel.ERROR) {
+    val isTraceEnabled: Boolean = level.code == LogLevel.TRACE.code
+    val isDebugEnabled: Boolean = level.code <= LogLevel.DEBUG.code
+    val isInfoEnabled: Boolean = level.code <= LogLevel.INFO.code
+    val isWarnEnabled: Boolean = level.code <= LogLevel.WARN.code
 }
 
-fun configByLoggerLevel(level: LogLevel) = when (level) {
-    LogLevel.TRACE -> LoggerConfig(
-        isTraceEnabled = true,
-        isDebugEnabled = true,
-        isInfoEnabled = true,
-        isWarnEnabled = true
-    )
-    LogLevel.DEBUG -> LoggerConfig(
-        isDebugEnabled = true,
-        isInfoEnabled = true,
-        isWarnEnabled = true
-    )
-    LogLevel.INFO -> LoggerConfig(
-        isInfoEnabled = true,
-        isWarnEnabled = true
-    )
+enum class LogLevel(val code: Int) {
+    TRACE(0),
+    DEBUG(10),
+    INFO(20),
+    WARN(30),
+    ERROR(40);
 
-    LogLevel.WARNING -> LoggerConfig(
-        isWarnEnabled = true
-    )
-    else -> LoggerConfig()
-
+    companion object {
+        fun byCode(code: Int): LogLevel? = values().firstOrNull { it.code == code }
+    }
 }

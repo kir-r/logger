@@ -1,4 +1,4 @@
-package mu
+package com.epam.drill.logger
 
 interface KLogger {
 
@@ -101,30 +101,4 @@ interface KLogger {
      * Lazy add a log message with a marker and throwable payload if isErrorEnabled is true
      */
     fun error(marker: Marker?, t: Throwable?, msg: () -> Any?)
-
-    /**
-     * Add a log message with all the supplied parameters along with method name
-     */
-    fun entry(vararg argArray: Any?)
-
-    /**
-     * Add log message indicating exit of a method
-     */
-    fun exit()
-
-    /**
-     * Add a log message with the return value of a method
-     */
-    fun <T> exit(result: T): T where T : Any?
-
-    /**
-     * Add a log message indicating an exception will be thrown along with the stack trace.
-     */
-    fun <T> throwing(throwable: T): T where T : Throwable
-
-    /**
-     * Add a log message indicating an exception is caught along with the stack trace.
-     */
-    fun <T> catching(throwable: T) where T : Throwable
-
 }

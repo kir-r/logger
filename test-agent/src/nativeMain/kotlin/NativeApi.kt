@@ -2,48 +2,36 @@ import com.epam.drill.jvmapi.*
 import com.epam.drill.jvmapi.gen.*
 import com.epam.drill.logger.*
 import kotlinx.cinterop.*
-import kotlinx.serialization.protobuf.*
-import mu.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.native.concurrent.*
 
 
 @Suppress("UNUSED", "UNUSED_PARAMETER")
 @CName("Java_com_epam_drill_logger_NativeApi_nativeOutput")
 fun nativeOutput(env: JNIEnv, thiz: jobject, message: jstring): Unit = withJSting {
-    KotlinLogging.output(message.toKString())
+    Logging.output(message.toKString())
 }
 
 @Suppress("UNUSED", "UNUSED_PARAMETER")
 @CName("Java_com_epam_drill_logger_NativeApi_createFd")
 fun nativeOutput(env: JNIEnv, thiz: jobject, message: jstring?): Unit = withJSting {
     if (message != null)
-        KotlinLogging.createFd(message.toKString())
+        Logging.createFd(message.toKString())
 }
 
 @Suppress("UNUSED", "UNUSED_PARAMETER")
 @CName("Java_com_epam_drill_logger_NativeApi_setConfig")
-fun setConfig(env: JNIEnv, thiz: jobject, rawConfig: jbyteArray) {
-    logConfig.value = ProtoBuf.load(LoggerConfig.serializer(), rawConfig.readBytes()!!).freeze()
-}
-
-private fun jbyteArray?.readBytes() = this?.let { jbytes ->
-    val length = GetArrayLength(jbytes)
-    val buffer: COpaquePointer? = GetPrimitiveArrayCritical(jbytes, null)
-    try {
-        buffer?.readBytes(length)
-    } finally {
-        ReleasePrimitiveArrayCritical(jbytes, buffer, JNI_ABORT)
-    }
-
+fun setConfig(env: JNIEnv, thiz: jobject, rawConfig: jint) {
+    val level = LogLevel.byCode(rawConfig) ?: LogLevel.ERROR
+    logConfig.value = LoggerConfig(level).freeze()
 }
 
 @Suppress("UNUSED", "UNUSED_PARAMETER")
 @CName("Java_com_epam_drill_logger_NativeApi_getConfig")
-fun get(env: JNIEnv, thiz: jobject): jbyteArray {
-    val rawConfig = ProtoBuf.dump(LoggerConfig.serializer(), logConfig.value)
-    val newByteArray: jbyteArray = NewByteArray(rawConfig.size)!!
-    SetByteArrayRegion(newByteArray, 0, rawConfig.size, rawConfig.toCValues())
-    return newByteArray
+fun get(env: JNIEnv, thiz: jobject): jint {
+    return logConfig.value.level.code
 }
 
 private inline fun withJSting(block: JStingConverter.() -> Unit) {

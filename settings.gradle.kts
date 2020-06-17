@@ -9,7 +9,6 @@ pluginManagement {
     val drillGradlePluginVersion: String by extra
     plugins {
         kotlin("multiplatform") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
         id("com.epam.drill.cross-compilation") version drillGradlePluginVersion
     }
 }

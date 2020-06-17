@@ -1,6 +1,9 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.native.tasks.*
+import org.jetbrains.kotlin.konan.target.*
+
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization")
 }
 
 val scriptUrl: String by extra
@@ -13,41 +16,19 @@ repositories {
 
 val drillJvmApiLibVersion: String by extra
 
-val presetName: String =
-    when {
-        org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC) -> "macosX64"
-        org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_UNIX) -> "linuxX64"
-        org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS) -> "mingwX64"
-        else -> throw RuntimeException("Target ${System.getProperty("os.name")} is not supported")
-    }
-
-fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.currentTarget(
-    name: String = presetName,
-    config: org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget.() -> Unit = {}
-): org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget {
-    val createTarget =
-        (presets.getByName(presetName) as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTestsPreset).createTarget(
-            name
-        )
-    targets.add(createTarget)
-    config(createTarget)
-    return createTarget
-}
-
-val libName = "agentOnlyForTest"
-
-val JVM_TEST_TARGET_NAME = "agentOnlyForTestPurpose"
-
-
 kotlin {
-    currentTarget(JVM_TEST_TARGET_NAME) {
-        binaries.sharedLib(libName, setOf(DEBUG))
+    targetFromPreset(
+        preset = presets.getByName(HostManager.host.presetName) as AbstractKotlinNativeTargetPreset,
+        name = "native"
+    ) {
+        binaries.sharedLib("agentOnlyForTest", setOf(DEBUG))
         compilations["main"].defaultSourceSet {
             dependencies {
                 implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVersion")
                 implementation(project(":"))
             }
         }
+        println(compilations["test"].binariesTaskName)
     }
 
     sourceSets {
@@ -66,6 +47,6 @@ kotlin {
     }
 }
 
-tasks.named<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest>("${JVM_TEST_TARGET_NAME}Test") {
+tasks.withType<KotlinNativeTest> {
     enabled = false
 }

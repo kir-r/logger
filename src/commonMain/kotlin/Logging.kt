@@ -1,11 +1,11 @@
-package mu
+package com.epam.drill.logger
 
-import com.epam.drill.logger.*
+import com.epam.drill.logger.internal.*
 
-object KotlinLogging {
+object Logging {
 
     private val _file = Atom<String?>(null)
-    val _fd = Atom<Int?>(null)
+    internal val _fd = Atom<Int?>(null)
 
     var file: String?
         get() = _file.value

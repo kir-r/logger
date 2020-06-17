@@ -4,6 +4,6 @@ object NativeApi {
 
     external fun nativeOutput(message: String)
     external fun createFd(file: String?)
-    external fun getConfig(): ByteArray
-    external fun setConfig(rawConfig: ByteArray)
+    external fun getConfig(): Int
+    external fun setConfig(rawConfig: Int)
 }
