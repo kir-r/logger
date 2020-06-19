@@ -28,7 +28,6 @@ kotlin {
                 implementation(project(":"))
             }
         }
-        println(compilations["test"].binariesTaskName)
     }
 
     sourceSets {
