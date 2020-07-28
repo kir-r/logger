@@ -20,6 +20,7 @@ val drillLoggerApiVersion: String by extra
 val atomicFuVersion: String by extra
 val ktorUtilVersion: String by extra
 val klockVersion: String by extra
+val kniVersion: String by extra
 
 kotlin {
     sourceSets {
@@ -74,6 +75,7 @@ kotlin {
                 compileOnly("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
                 implementation("io.ktor:ktor-utils-jvm:$ktorUtilVersion")
                 implementation("com.soywiz.korlibs.klock:klock-jvm:$klockVersion")
+                implementation("com.epam.drill.kni:runtime-jvm:$kniVersion")
             }
         }
         val test by compilations

@@ -1,10 +1,15 @@
 package com.epam.drill.logger
 
-object NativeApi {
-    external fun getLogLevel(): Int
-    external fun setLogLevel(code: Int)
+import com.epam.drill.kni.*
 
-    external fun setFilename(filename: String?)
+@Kni
+actual object NativeApi {
 
-    external fun output(message: String)
+    actual external fun getLogLevel(): Int
+
+    actual external fun setLogLevel(code: Int)
+
+    actual external fun setFilename(filename: String?)
+
+    actual external fun output(message: String)
 }

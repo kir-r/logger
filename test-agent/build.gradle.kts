@@ -4,16 +4,18 @@ import org.jetbrains.kotlin.konan.target.*
 
 plugins {
     kotlin("multiplatform")
+    id("com.epam.drill.gradle.plugin.kni")
 }
 
 val scriptUrl: String by extra
-
+val kniVersion: String by extra
 repositories {
     mavenLocal()
     apply(from = "$scriptUrl/maven-repo.gradle.kts")
+    mavenCentral()
     jcenter()
 }
-
+val kniOutputDir = "src/kni/kotlin"
 val drillJvmApiLibVersion: String by extra
 
 kotlin {
@@ -23,13 +25,30 @@ kotlin {
     ) {
         binaries.sharedLib("agentOnlyForTest", setOf(DEBUG))
         compilations["main"].defaultSourceSet {
+            kotlin.srcDir(file(kniOutputDir))
             dependencies {
-                implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVersion")
+                implementation("com.epam.drill:jvmapi:$drillJvmApiLibVersion")
+                implementation("com.epam.drill.kni:runtime:$kniVersion")
                 implementation(project(":"))
             }
         }
     }
 
+    kni {
+        jvmTargets = sequenceOf(jvm())
+        srcDir = kniOutputDir
+        jvmtiAgentObjectPath = "test.Agent"
+    }
+
+    jvm {
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                implementation(kotlin("stdlib"))
+                implementation(project(":"))
+                implementation("com.epam.drill.kni:runtime-jvm:$kniVersion")
+            }
+        }
+    }
     sourceSets {
         commonMain {
             dependencies {
@@ -46,6 +65,18 @@ kotlin {
     }
 }
 
-tasks.withType<KotlinNativeTest> {
-    enabled = false
+tasks {
+    withType<KotlinNativeTest> { enabled = false }
+    val generateNativeClasses by getting {}
+    named("compileKotlinNative") { dependsOn(generateNativeClasses) }
+
+    val cleanExtraData by registering(Delete::class) {
+        group = "build"
+        delete(kniOutputDir)
+    }
+
+    clean {
+        dependsOn(cleanExtraData)
+    }
 }
+
