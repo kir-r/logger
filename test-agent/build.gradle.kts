@@ -43,22 +43,15 @@ kotlin {
     jvm {
         compilations["main"].defaultSourceSet {
             dependencies {
-                implementation(kotlin("stdlib"))
                 implementation(project(":"))
-                implementation("com.epam.drill.kni:runtime-jvm:$kniVersion")
+                implementation("com.epam.drill.kni:runtime:$kniVersion")
             }
         }
     }
     sourceSets {
-        commonMain {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
-            }
-        }
-
         commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-common")
+                implementation("org.jetbrains.kotlin:kotlin-test")
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
