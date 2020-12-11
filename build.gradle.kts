@@ -17,7 +17,6 @@ repositories {
 }
 
 val drillLoggerApiVersion: String by extra
-val atomicFuVersion: String by extra
 val ktorUtilVersion: String by extra
 val klockVersion: String by extra
 val kniVersion: String by extra
@@ -30,13 +29,12 @@ kotlin {
         commonMain {
             dependencies {
                 api("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
-                implementation(kotlin("stdlib-common"))
                 implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
             }
         }
         commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-common")
+                implementation("org.jetbrains.kotlin:kotlin-test")
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
             }
         }
@@ -47,7 +45,7 @@ kotlin {
             defaultSourceSet {
                 dependsOn(sourceSets.commonMain.get())
                 dependencies {
-                    implementation("io.ktor:ktor-utils-native:$ktorUtilVersion")
+                    implementation("io.ktor:ktor-utils:$ktorUtilVersion")
                 }
             }
         }
@@ -59,10 +57,9 @@ kotlin {
         mingwX64()
     ).forEach {
         val main by it.compilations
-        val suffix = main.konanTarget.presetName.toLowerCase()
         main.defaultSourceSet {
             dependencies {
-                implementation("com.soywiz.korlibs.klock:klock-$suffix:$klockVersion")
+                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
             }
         }
     }
@@ -71,11 +68,9 @@ kotlin {
         val main by compilations
         main.defaultSourceSet {
             dependencies {
-                compileOnly(kotlin("stdlib"))
-                compileOnly("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
-                implementation("io.ktor:ktor-utils-jvm:$ktorUtilVersion")
-                implementation("com.soywiz.korlibs.klock:klock-jvm:$klockVersion")
-                implementation("com.epam.drill.kni:runtime-jvm:$kniVersion")
+                implementation("io.ktor:ktor-utils:$ktorUtilVersion")
+                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
+                implementation("com.epam.drill.kni:runtime:$kniVersion")
             }
         }
         val test by compilations
@@ -87,9 +82,12 @@ kotlin {
     }
 }
 
+val skipJvmTests: Boolean = extra["skipJvmTests"]?.toString()?.toBoolean() ?: false
+
 tasks.withType<org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest> {
+    enabled = !skipJvmTests
     val agentLibTaskPath = ":test-agent:linkAgentOnlyForTestDebugSharedNative"
-    dependsOn(agentLibTaskPath)
+    runCatching { tasks.getByPath(agentLibTaskPath) }.getOrNull()?.let { dependsOn(it) }
     doFirst {
         val libExtensions = listOf("so", "dylib", "dll")
         val outputDir = tasks.getByPath(agentLibTaskPath).outputs.files.first()

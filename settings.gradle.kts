@@ -18,5 +18,7 @@ pluginManagement {
         id("com.epam.drill.gradle.plugin.kni") version kniVersion
     }
 }
+val skipJvmTests: Boolean = extra["skipJvmTests"]?.toString()?.toBoolean() ?: false
 
-include(":test-agent")
+if (!skipJvmTests)
+    include(":test-agent")
