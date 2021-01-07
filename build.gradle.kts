@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.konan.target.*
-
 plugins {
     kotlin("multiplatform")
     id("com.epam.drill.cross-compilation")
@@ -22,6 +20,10 @@ val klockVersion: String by extra
 val kniVersion: String by extra
 
 kotlin {
+    linuxX64()
+    macosX64()
+    mingwX64()
+
     sourceSets {
         all {
             languageSettings.useExperimentalAnnotation("io.ktor.utils.io.core.ExperimentalIoApi")
@@ -51,25 +53,10 @@ kotlin {
         }
     }
 
-    listOf(
-        linuxX64(),
-        macosX64(),
-        mingwX64()
-    ).forEach {
-        val main by it.compilations
-        main.defaultSourceSet {
-            dependencies {
-                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
-            }
-        }
-    }
-
     jvm {
         val main by compilations
         main.defaultSourceSet {
             dependencies {
-                implementation("io.ktor:ktor-utils:$ktorUtilVersion")
-                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
                 implementation("com.epam.drill.kni:runtime:$kniVersion")
             }
         }

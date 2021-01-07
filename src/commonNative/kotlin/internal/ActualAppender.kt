@@ -9,9 +9,6 @@ internal actual val platformName: String = Platform.osFamily.name
 @SharedImmutable
 internal val _fileDescriptor = AtomicReference<Int?>(null)
 
-@SharedImmutable
-private val stdOut = FreezableAtomicReference(Output(STDOUT_FILENO))
-
 internal fun output(block: (Appendable) -> Unit) {
     _fileDescriptor.value?.let {
         Output(STDOUT_FILENO).flush()
