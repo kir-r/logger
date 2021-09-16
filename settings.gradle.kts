@@ -6,7 +6,8 @@ apply(from = "$scriptUrl/maven-repo.settings.gradle.kts")
 pluginManagement {
     repositories {
         mavenLocal()
-        maven(url = "http://oss.jfrog.org/oss-release-local")
+        mavenCentral()
+        maven(url = "https://oss.jfrog.org/oss-release-local")
         gradlePluginPortal()
     }
     val kotlinVersion: String by extra

@@ -17,8 +17,6 @@ package com.epam.drill.logger.internal
 
 import com.epam.drill.logger.*
 import com.epam.drill.logger.api.*
-import com.soywiz.klock.*
-import kotlin.native.concurrent.*
 
 internal expect val platformName: String
 
@@ -29,15 +27,15 @@ internal fun appendLogMessage(
     @Suppress("UNUSED_PARAMETER") marker: Marker? = null,
     msg: () -> Any?
 ) = run {
-    val message = "${timestamp()} [$platformName][${level.name}][$name] ${msg.toStringSafe()}"
+    val message = "${Calendar.timestamp()} [$platformName][${level.name}][$name] ${msg.toStringSafe()}"
     val exception = t?.stackTraceToString() ?: ""
     Logging.output("$message $exception")
 }
 
-@SharedImmutable
-private val timestampFmt = DateFormat("yyyy-MM-dd HH:mm:ss:SSS")
-
-private fun timestamp(): String = DateTime.now().toString(timestampFmt)
+//TODO EPMDJ-8551 use kotlinx-datetime
+expect object Calendar {
+    fun timestamp(): String
+}
 
 private fun (() -> Any?).toStringSafe(): String = try {
     invoke().toString()

@@ -15,4 +15,16 @@
  */
 package com.epam.drill.logger.internal
 
+import java.text.*
+import java.util.Calendar
+
 actual val platformName: String = "jvm"
+
+actual object Calendar {
+    actual fun timestamp(): String = System.currentTimeMillis().let {
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS")
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = it
+        formatter.format(calendar.time)
+    }
+}

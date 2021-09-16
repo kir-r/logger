@@ -16,13 +16,13 @@
 package com.epam.drill.logger
 
 import com.epam.drill.logger.api.*
-import com.soywiz.klock.*
+import com.epam.drill.logger.internal.*
 import kotlin.test.*
 
 
 class DrillLoggerTest {
     companion object {
-        val timestamp: String = DateTime.now().toString(DateFormat.FORMAT1)
+        val timestamp: String = Calendar.timestamp()
             .replace(':', '-')
             .apply { println("Timestamp: $this") }
     }

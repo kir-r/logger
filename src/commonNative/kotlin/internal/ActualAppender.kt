@@ -15,6 +15,7 @@
  */
 package com.epam.drill.logger.internal
 
+import io.ktor.util.date.*
 import io.ktor.utils.io.streams.*
 import platform.posix.*
 import kotlin.native.concurrent.*
@@ -41,4 +42,12 @@ private object StdOut : Appendable {
     override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): Appendable = apply {
         print(value?.subSequence(startIndex, endIndex))
     }
+}
+
+actual object Calendar {
+    actual fun timestamp(): String = GMTDate().run {
+        "$year-${(month.ordinal.inc()).padStart(2)}-${dayOfMonth.padStart(2)} ${hours.padStart(2)}:${minutes.padStart(2)}:${seconds.padStart(2)}"
+    }
+
+    private fun Int.padStart(length: Int): String = toString().padStart(length, '0')
 }

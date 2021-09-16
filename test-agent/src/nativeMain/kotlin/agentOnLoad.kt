@@ -17,11 +17,14 @@
 
 package test
 
+import com.epam.drill.jvmapi.*
 import com.epam.drill.jvmapi.gen.*
 import com.epam.drill.kni.*
+import com.epam.drill.logger.*
 
 object Agent : JvmtiAgent {
     override fun agentOnLoad(options: String): Int {
+        loggerCallback = { Logging.logger(it) }
         println("agentOnLoad")
         return JNI_OK
     }

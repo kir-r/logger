@@ -9,18 +9,18 @@ plugins {
 
 val scriptUrl: String by extra
 
+val drillLoggerApiVersion: String by extra
+val ktorUtilVersion: String by extra
+val kniVersion: String by extra
+val kxDatetime: String by extra
+
 apply(from = "$scriptUrl/git-version.gradle.kts")
+apply(from = "$scriptUrl/maven-repo.gradle.kts")
 
 repositories {
     mavenLocal()
-    apply(from = "$scriptUrl/maven-repo.gradle.kts")
-    jcenter()
+    mavenCentral()
 }
-
-val drillLoggerApiVersion: String by extra
-val ktorUtilVersion: String by extra
-val klockVersion: String by extra
-val kniVersion: String by extra
 
 kotlin {
     linuxX64()
@@ -34,7 +34,6 @@ kotlin {
         commonMain {
             dependencies {
                 api("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
-                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
             }
         }
         commonTest {

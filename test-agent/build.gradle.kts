@@ -13,7 +13,6 @@ repositories {
     mavenLocal()
     apply(from = "$scriptUrl/maven-repo.gradle.kts")
     mavenCentral()
-    jcenter()
 }
 val kniOutputDir = "src/kni/kotlin"
 val drillJvmApiLibVersion: String by extra
