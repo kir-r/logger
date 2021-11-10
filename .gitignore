@@ -4,3 +4,5 @@ build/
 !/.idea/fileTemplates
 /build-cache/
 .gradle/
+kni-meta-info
+kni

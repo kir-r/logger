@@ -1,18 +1,16 @@
 import java.net.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 plugins {
     kotlin("multiplatform")
     id("com.epam.drill.cross-compilation")
     id("com.github.hierynomus.license")
+    id("com.epam.drill.gradle.plugin.kni")
     `maven-publish`
 }
 
 val scriptUrl: String by extra
 
-val drillLoggerApiVersion: String by extra
-val ktorUtilVersion: String by extra
-val kniVersion: String by extra
-val kxDatetime: String by extra
 
 apply(from = "$scriptUrl/git-version.gradle.kts")
 apply(from = "$scriptUrl/maven-repo.gradle.kts")
@@ -22,11 +20,27 @@ repositories {
     mavenCentral()
 }
 
-kotlin {
-    linuxX64()
-    macosX64()
-    mingwX64()
+val drillLoggerApiVersion: String by extra
+val ktorUtilVersion: String by extra
+val kniVersion: String by extra
+val kxDatetime: String by extra
+val drillJvmApiLibVersion: String by extra
 
+val nativeTargets = mutableSetOf<KotlinNativeTarget>()
+
+kotlin {
+    targets {
+        mingwX64()
+        macosX64()
+        linuxX64()
+        jvm {
+            compilations.getByName("main").defaultSourceSet {
+                dependencies {
+                    implementation("com.epam.drill.kni:runtime:$kniVersion")
+                }
+            }
+        }
+    }
     sourceSets {
         all {
             languageSettings.useExperimentalAnnotation("io.ktor.utils.io.core.ExperimentalIoApi")
@@ -34,6 +48,9 @@ kotlin {
         commonMain {
             dependencies {
                 api("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kxDatetime")
+                implementation("io.ktor:ktor-utils:$ktorUtilVersion")
+                implementation("com.epam.drill:jvmapi:$drillJvmApiLibVersion")
             }
         }
         commonTest {
@@ -69,6 +86,10 @@ kotlin {
             }
         }
     }
+    kni {
+        jvmTargets = sequenceOf(jvm())
+        additionalJavaClasses = sequenceOf()
+    }
 }
 
 val skipJvmTests: Boolean = extra["skipJvmTests"]?.toString()?.toBoolean() ?: false
@@ -83,6 +104,10 @@ tasks.withType<org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest> {
         val agent = outputDir.walkTopDown().last { it.extension in libExtensions }
         jvmArgs("-agentpath:$agent")
     }
+}
+
+tasks.named<ProcessResources>("jvmProcessResources") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 val licenseFormatSettings by tasks.registering(com.hierynomus.gradle.license.tasks.LicenseFormat::class) {
