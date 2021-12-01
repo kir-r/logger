@@ -2,17 +2,14 @@ import java.net.*
 
 plugins {
     kotlin("multiplatform")
-    id("com.epam.drill.cross-compilation")
     id("com.github.hierynomus.license")
     `maven-publish`
 }
 
 val scriptUrl: String by extra
-
+val kniVersion: String by extra
 val drillLoggerApiVersion: String by extra
 val ktorUtilVersion: String by extra
-val kniVersion: String by extra
-val kxDatetime: String by extra
 
 apply(from = "$scriptUrl/git-version.gradle.kts")
 apply(from = "$scriptUrl/maven-repo.gradle.kts")
@@ -23,49 +20,45 @@ repositories {
 }
 
 kotlin {
-    linuxX64()
-    macosX64()
-    mingwX64()
-
-    sourceSets {
-        all {
-            languageSettings.useExperimentalAnnotation("io.ktor.utils.io.core.ExperimentalIoApi")
-        }
-        commonMain {
-            dependencies {
-                api("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
-            }
-        }
-        commonTest {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test")
-                implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
-            }
-        }
-    }
-
-    crossCompilation {
-        common {
-            defaultSourceSet {
-                dependsOn(sourceSets.commonMain.get())
+    targets {
+        mingwX64()
+        macosX64()
+        linuxX64()
+        jvm {
+            compilations.getByName("main").defaultSourceSet {
                 dependencies {
-                    implementation("io.ktor:ktor-utils:$ktorUtilVersion")
+                    implementation("com.epam.drill.kni:runtime:$kniVersion")
                 }
             }
         }
     }
-
-    jvm {
-        val main by compilations
-        main.defaultSourceSet {
+    sourceSets {
+        all {
+            languageSettings.optIn("io.ktor.utils.io.core.ExperimentalIoApi")
+        }
+        val commonMain by getting {
             dependencies {
-                implementation("com.epam.drill.kni:runtime:$kniVersion")
+                api("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
+                implementation("io.ktor:ktor-utils:$ktorUtilVersion")
             }
         }
-        val test by compilations
-        test.defaultSourceSet {
+
+        val commonNative by creating {
+            dependsOn(commonMain)
+        }
+        val linuxX64Main by getting {
+            dependsOn(commonNative)
+        }
+        val mingwX64Main by getting {
+            dependsOn(commonNative)
+        }
+        val macosX64Main by getting {
+            dependsOn(commonNative)
+        }
+        val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-junit"))
+                implementation(kotlin("test"))
+                implementation(kotlin("test-annotations-common"))
             }
         }
     }

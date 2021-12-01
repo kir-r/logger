@@ -14,17 +14,17 @@ repositories {
     apply(from = "$scriptUrl/maven-repo.gradle.kts")
     mavenCentral()
 }
-val kniOutputDir = "src/kni/kotlin"
+
 val drillJvmApiLibVersion: String by extra
+val nativeTargets = mutableSetOf<KotlinNativeTarget>()
 
 kotlin {
-    targetFromPreset(
+    val targetFromPreset = targetFromPreset(
         preset = presets.getByName(HostManager.host.presetName) as AbstractKotlinNativeTargetPreset,
         name = "native"
     ) {
         binaries.sharedLib("agentOnlyForTest", setOf(DEBUG))
         compilations["main"].defaultSourceSet {
-            kotlin.srcDir(file(kniOutputDir))
             dependencies {
                 implementation("com.epam.drill:jvmapi:$drillJvmApiLibVersion")
                 implementation("com.epam.drill.kni:runtime:$kniVersion")
@@ -33,10 +33,12 @@ kotlin {
         }
     }
 
+    nativeTargets.add(targetFromPreset)
+
     kni {
         jvmTargets = sequenceOf(jvm())
-        srcDir = kniOutputDir
         jvmtiAgentObjectPath = "test.Agent"
+        nativeCrossCompileTarget = nativeTargets.asSequence()
     }
 
     jvm {
@@ -64,7 +66,10 @@ tasks {
 
     val cleanExtraData by registering(Delete::class) {
         group = "build"
-        delete(kniOutputDir)
+        nativeTargets.forEach {
+            val path = "src/${it.name}Main/kotlin/"
+            delete(file("${path}kni"))
+        }
     }
 
     clean {
